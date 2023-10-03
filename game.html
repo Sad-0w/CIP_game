@@ -4,10 +4,6 @@
     <title>Zero-Sum Defense</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <style>
-canvas {
-    border:1px solid #d3d3d3;
-    background-color: #f1f1f1;
-}
 body {
   font-family: Arial;
   color: white;
@@ -21,6 +17,12 @@ body {
   top: 0;
   overflow-x: hidden;
   padding-top: 20px;
+}
+
+
+
+.margin{
+    margin-left: 30px;
 }
 
 .left {
@@ -50,29 +52,36 @@ body {
 <body onload="startGame()">
 <script>
 
-var myGamePiece;
-var myObstacles = [];
-var myScore;
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+var phishing = 0.95;
+var zeroday = 0.05 * Math.random();
+var insider = 0.15 * getRandomInt(3);
+var policyreduction = 1;
+var DDoS = 1;
+var CVEs = getRandomInt(30);
+var open_network = getRandomInt(3) * getRandomInt(20);
+var insiders = getRandomInt(5);
 
 function startGame() {
     myGamePiece = new component(30, 30, "red", 10, 120);
     myGamePiece.gravity = 0.05;
     myScore = new component("30px", "Consolas", "black", 280, 40, "text");
-    myGameArea.start();
+    console_area.log("test");
+    console_area.log("test2");
 }
 
-var myGameArea = {
-    canvas : document.createElement("canvas"),
-    start : function() {
-        this.canvas.width = 480;
-        this.canvas.height = 270;
-        this.context = this.canvas.getContext("2d");
-        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        this.frameNo = 0;
-        this.interval = setInterval(updateGameArea, 20);
-        },
-    clear : function() {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+var console_area = {
+    log : function(string) {
+        const div = document.createElement('div');
+
+        div.className = 'row';
+
+        div.innerHTML = `<p>`+string+`</p>`;
+            
+        document.getElementById('console').appendChild(div);
     }
 }
 
@@ -169,18 +178,19 @@ function accelerate(n) {
 </script>
 <br>
 <div class="split left">
+    <div class="margin">
 <h1>Zero-Sum Defense</h1>
 <button onmousedown="insidethreat_reduce()">Insider Threat Training</button> <br>
-<button onmousedown="phshing_reduce()">Phishing Training</button> <br>
+<button onmousedown="phishing_reduce()">Phishing Training</button> <br>
 <button onmousedown="network_reduce()">Audit Network</button> <br>
 <button onmousedown="software_reduce()">Software Audit</button> <br>
-<button onmousedown="inside_threat_reduce()">Policy Audit</button> <br>
-<button onmousedown="inside_threat_reduce()"></button> <br>
-<button onmousedown="inside_threat_reduce()">Insider Threat</button> <br>
-<button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
-<p>Use the ACCELERATE button to stay in the air</p>
-<p>How long can you stay alive?</p>
+<button onmousedown="policy_reduce()">Policy Audit</button> <br>
+<button onmousedown="DDoS_protect()">Firewall rule change</button> <br>
+<p>How long can your network survive?</p>
+<p>Select your defenses</p>
+<button onmousedown="descriptions()">Descriptions</button> <br>
 </div>
-<div class="split right"></div>
+</div>
+<div class="split right"><div class="console margin" id="console"></div></div>
 </body>
 </html>
