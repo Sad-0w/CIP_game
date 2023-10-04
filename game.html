@@ -1,12 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Zero-Sum Defense</title>
+    <title>Zero Defense</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <style>
 body {
   font-family: Arial;
   color: white;
+}
+
+.button {
+  background-color: #111; /* Green */
+  margin-top: 3px;
+  border: 1px solid white;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
 }
 
 .split {
@@ -19,8 +31,6 @@ body {
   padding-top: 20px;
 }
 
-
-
 .margin{
     margin-left: 30px;
 }
@@ -32,7 +42,7 @@ body {
 
 .right {
   right: 0;
-  background-color: red;
+  background-color: salmon;
 }
 
 .centered {
@@ -53,27 +63,21 @@ body {
 <script>
 
 function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
+  return Math.floor(Math.random() * (max+1));
 }
 
+var days = 0;
+var count = 7;
+var zeroday = 0.25;
 var phishing = 0.95;
-var zeroday = 0.05 * Math.random();
-var insider = 0.15 * getRandomInt(3);
+var zeroday = getRandomInt(5)/100;
 var policyreduction = 1;
 var DDoS = 1;
 var CVEs = getRandomInt(30);
 var open_network = getRandomInt(3) * getRandomInt(20);
 var insiders = getRandomInt(5);
 
-function startGame() {
-    myGamePiece = new component(30, 30, "red", 10, 120);
-    myGamePiece.gravity = 0.05;
-    myScore = new component("30px", "Consolas", "black", 280, 40, "text");
-    console_area.log("test");
-    console_area.log("test2");
-}
-
-var console_area = {
+var console = {
     log : function(string) {
         const div = document.createElement('div');
 
@@ -82,115 +86,163 @@ var console_area = {
         div.innerHTML = `<p>`+string+`</p>`;
             
         document.getElementById('console').appendChild(div);
+    },
+    day : function(cur) {
+        const header = document.getElementById('day');
+        header.innerHTML = "Day: "+cur.toString();
     }
 }
 
-function component(width, height, color, x, y, type) {
-    this.type = type;
-    this.score = 0;
-    this.width = width;
-    this.height = height;
-    this.speedX = 0;
-    this.speedY = 0;    
-    this.x = x;
-    this.y = y;
-    this.gravity = 0;
-    this.gravitySpeed = 0;
-    this.update = function() {
-        ctx = myGameArea.context;
-        if (this.type == "text") {
-            ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
-            ctx.fillText(this.text, this.x, this.y);
-        } else {
-            ctx.fillStyle = color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+function startGame() {
+    console.day(0);
+}
+
+function fail_game() {
+    alert("you have been breached in "+days+" days");
+}
+
+function day_end() {
+    if (count <= 0) {
+        var zerodayfails = ["A zero-day vulnerability allows malicious actors to exfiltrate data from the network", 
+        "A zero-day vulnerability allows APT access to the network", 
+        "A zero-day vulnerability allowed a black hat hacker to install ransomware on the network"];
+        var phishingfails = ["A social engineering attack allows a malicious actor to gain employee credentials",
+        "A phishing scam causes the company to lose a large amount of money", 
+        "A spearphishing attack allows an APT to gain access to the network"];
+        var DDoSfail = ["A DDoS attack causes the company to lose customers due to services being down",
+        "A DoS attack causes havoc on the company network"];
+        var CVEfail = ["A CVE in the network allows a malicious actor to attack the network",
+        "A CVE allows an APT to be established on the network",
+        "A CVE causes a data breach in the company from black hat hackers"];
+        var networkfail = ["An open port on the network allowed hackers to gain access to employee PII",
+        "An open port on the network allowed an APT to be established in the network",
+        "An open port on the network allowed a black hat hacker to perform a phishing attack on the network"];
+        var insiderfail = "An insider exfiltrated data to sell on the internet";
+        days++;
+        var odds = [zeroday, phishing*policyreduction, DDoS, CVEs*0.03, open_network*0.01*policyreduction, insiders*0.20*policyreduction];
+        var max = Math.max(zeroday, phishing*policyreduction, DDoS, CVEs*0.03, open_network*0.01*policyreduction, insiders*0.20*policyreduction)
+        if(Math.random() < max && Math.random() < max) {
+            if (odds[0] == max) {
+                console.log(zerodayfails[getRandomInt(2)]);
+                fail_game();
+            } else if (odds[1] == max) {
+                console.log(phishingfails[getRandomInt(2)]);
+                fail_game();
+            } else if (odds[2] == max) {
+                console.log(DDoSfail[getRandomInt(1)]);
+                fail_game();
+            } else if (odds[3] == max) {
+                console.log(CVEfail[getRandomInt(2)]);
+                fail_game();
+            } else if (odds[4] == max) {
+                console.log(networkfail[getRandomInt(2)]);
+                fail_game();
+            } else if (odds[5] == max) {
+                console.log(insiderfail);
+                fail_game();
+            }
         }
+        count = 7;
     }
-    this.newPos = function() {
-        this.gravitySpeed += this.gravity;
-        this.x += this.speedX;
-        this.y += this.speedY + this.gravitySpeed;
-        this.hitBottom();
-    }
-    this.hitBottom = function() {
-        var rockbottom = myGameArea.canvas.height - this.height;
-        if (this.y > rockbottom) {
-            this.y = rockbottom;
-            this.gravitySpeed = 0;
-        }
-    }
-    this.crashWith = function(otherobj) {
-        var myleft = this.x;
-        var myright = this.x + (this.width);
-        var mytop = this.y;
-        var mybottom = this.y + (this.height);
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + (otherobj.width);
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + (otherobj.height);
-        var crash = true;
-        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-            crash = false;
-        }
-        return crash;
-    }
+    console.day(days)
+    return;
 }
 
-function updateGameArea() {
-    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-    for (i = 0; i < myObstacles.length; i += 1) {
-        if (myGamePiece.crashWith(myObstacles[i])) {
-            return;
-        } 
-    }
-    myGameArea.clear();
-    myGameArea.frameNo += 1;
-    if (myGameArea.frameNo == 1 || everyinterval(150)) {
-        x = myGameArea.canvas.width;
-        minHeight = 20;
-        maxHeight = 200;
-        height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
-        minGap = 50;
-        maxGap = 200;
-        gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
-        myObstacles.push(new component(10, height, "green", x, 0));
-        myObstacles.push(new component(10, x - height - gap, "green", x, height + gap));
-    }
-    for (i = 0; i < myObstacles.length; i += 1) {
-        myObstacles[i].x += -1;
-        myObstacles[i].update();
-    }
-    myScore.text="SCORE: " + myGameArea.frameNo;
-    myScore.update();
-    myGamePiece.newPos();
-    myGamePiece.update();
+function insidethreat_reduce() {
+    var caught = 0;
+    if (insiders > 0) {
+        caught = getRandomInt(1)
+        insiders -= caught;
+    } 
+    console.log("The training is complete, "+caught+" insiders were caught");
+    count--;
+    day_end();
+    return;
 }
 
-function everyinterval(n) {
-    if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
-    return false;
+function phishing_reduce() {
+    phishing = phishing/(getRandomInt(5)+1);
+    estimatedphishing = Math.floor((phishing + 0.02 * (getRandomInt(2)-1))*100)/100;
+    console.log("The training is complete, based on internal testing the chance that employees get phished is reduced to "+estimatedphishing.toString());
+    count--;
+    day_end();
+    return;
 }
 
-function accelerate(n) {
-    myGamePiece.gravity = n;
+function network_reduce() {
+    var diff = 0;
+    if (open_network > 3) {
+        diff = open_network;        
+        open_network = Math.floor(open_network/5);
+        diff = diff - open_network
+    }
+    console.log("The changes are complete, "+diff+" ip addresses secured");
+    count--;
+    day_end();
+    return;
 }
+
+function software_reduce() {
+    var found = 0;
+    if (CVEs > 0) {
+        found = (getRandomInt(3));
+        CVEs -= (getRandomInt(3));
+    }
+    console.log("The analysis is complete, "+found+" CVEs were found");
+    count--;
+    day_end();
+    return;
+}
+
+function policy_reduce(){ 
+    policyreduction *= 1-(getRandomInt(5)/100);
+    estimatedpolicy = Math.floor((1-policyreduction + 0.02 * (getRandomInt(2)-1))*100)/100;
+    console.log("Risk management policy changed, "+estimatedpolicy+"% security is estimated");
+    count--;
+    day_end();
+    return;
+}
+
+function DDoS_protect(){
+    if (DDoS != 0.03) {
+        console.log("Firewall policy changed, DoS opportunities reduced");
+    } else {
+        console.log("Firewall policy audit complete, no changes needed");
+    }
+    DDoS = 0.03;
+    count--;
+    day_end();
+    return;
+}
+
+function descriptions(){
+    alert("Hello, welcome to Zero Defense.\n"+
+    "Each day you can choose an option for defense 7 times before the attacker attacks the least secure area of the network\n"+
+    "You can defend in one of a few ways:\n"+
+    "Insider Threat Training removes insiders from the company reducing the chances of an insider attack\n"+
+    "Phishing Training trains employees to not fall for social engineering as much\n"+
+    "Audit Network closes ports and locks down parts of the network making sure it is secure\n"+
+    "Software Audit checks the code for CVEs which could lead to exploits\n"+
+    "Policy Audit reduces the chances of a devastating attack through risk management policy\n"+
+    "Firewall rule change ensures that DDoS attacks are much less effective");
+}
+
 </script>
 <br>
 <div class="split left">
     <div class="margin">
-<h1>Zero-Sum Defense</h1>
-<button onmousedown="insidethreat_reduce()">Insider Threat Training</button> <br>
-<button onmousedown="phishing_reduce()">Phishing Training</button> <br>
-<button onmousedown="network_reduce()">Audit Network</button> <br>
-<button onmousedown="software_reduce()">Software Audit</button> <br>
-<button onmousedown="policy_reduce()">Policy Audit</button> <br>
-<button onmousedown="DDoS_protect()">Firewall rule change</button> <br>
+<h1>Zero Defense</h1>
+<button class="button"  onmousedown="insidethreat_reduce()">Insider Threat Training</button> <br>
+<button class="button"  onmousedown="phishing_reduce()">Phishing Training</button> <br>
+<button class="button"  onmousedown="network_reduce()">Audit Network</button> <br>
+<button class="button"  onmousedown="software_reduce()">Software Audit</button> <br>
+<button class="button"  onmousedown="policy_reduce()">Policy Audit</button> <br>
+<button class="button"  onmousedown="DDoS_protect()">Firewall rule change</button> <br>
 <p>How long can your network survive?</p>
 <p>Select your defenses</p>
-<button onmousedown="descriptions()">Descriptions</button> <br>
+<button class="button"  onmousedown="descriptions()">Descriptions</button> <br>
 </div>
 </div>
-<div class="split right"><div class="console margin" id="console"></div></div>
+<div class="split right"><div class="console margin" id="console"><h1 id="day"></h1></div></div>
 </body>
 </html>
